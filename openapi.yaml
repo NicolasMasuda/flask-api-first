@@ -1,0 +1,20 @@
+openapi: 3.1.1
+info:
+  version: "1.0"
+  title: AppFirst
+servers:
+  - url: http://localhost:5000
+paths:
+  /hello:
+    get:
+      summary: hello world
+      responses:
+        '200':
+          description: Respuesta completa
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
