@@ -1,16 +1,26 @@
 openapi: 3.1.1
 info:
-  version: "1.0"
-  title: AppFirst
+  title: APIFirst Example
+  description: API First example using Flask and OpenAPI
+  version: 1.0.0
+  contact:
+    name: Developer
+    email: developer@example.com
+
 servers:
   - url: http://localhost:5000
+    description: Development server
+
 paths:
   /hello:
     get:
-      summary: hello world
+      summary: Hello World endpoint
+      operationId: getHello
+      tags:
+        - Hello
       responses:
         '200':
-          description: Respuesta completa
+          description: Successful response
           content:
             application/json:
               schema:
@@ -18,3 +28,4 @@ paths:
                 properties:
                   message:
                     type: string
+                    example: "Hello, World!"

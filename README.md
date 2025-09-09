@@ -9,6 +9,7 @@ Se incluye:
 - Un endpoint básico `/hello`.
 - Documentación interactiva con **Swagger UI** disponible en `/docs`.
 - Exposición del contrato OpenAPI en `/openapi.yaml`.
+- **Validación automática de requests** usando OpenAPI Validator.
 
 ---
 
@@ -30,6 +31,36 @@ OpenAPI es un **estándar para describir APIs REST**. Define:
 ### Swagger UI
 Swagger UI permite **visualizar y probar la API** directamente desde el navegador a partir del archivo OpenAPI.
 
+### OpenAPI Validator
+El validador OpenAPI permite **validar automáticamente** las peticiones entrantes contra la especificación definida, similar al middleware.
+
+#### Validación Global (como Express middleware)
+- **Una sola configuración** en `app/__init__.py`
+- **Validación automática** de todos los requests
+- **Sin código repetitivo** en las rutas
+
+#### Rutas Limpias
+- **Sin decoradores** en cada función
+- **Sin validación manual** en el código
+- **Enfoque en la lógica de negocio**
+
+#### Consistencia con OpenAPI
+- **Validación directa** desde el archivo `openapi.yaml`
+- **Sincronización automática** entre documentación y validación
+- **API First** real: el contrato define el comportamiento
+
+#### Conclusión
+
+La implementación de OpenAPI Validator en Flask proporciona:
+
+✅ **Validación automática** de requests contra la especificación OpenAPI  
+✅ **Rutas limpias** sin código de validación repetitivo  
+✅ **Middleware global** similar a Express.js  
+✅ **Manejo consistente** de errores de validación  
+✅ **API First** verdadero donde el contrato define el comportamiento  
+
+Este enfoque optimiza el desarrollo al garantizar que todas las peticiones cumplan con la especificación OpenAPI definida, facilitando el mantenimiento y la comunicación entre equipos.
+
 ---
 
 ## Estructura del proyecto
@@ -43,10 +74,9 @@ APIFirst/
 ├── app/
 │   ├── init.py
 │   ├── routes/
-│   │    └── hello.py
-│   ├── controllers/
-│   │    └── hello_controller.py
-│   └── models/
-│        └── init.py
+│   │    │── hello.py
+│   │    └── docs.py       <-- aquí estará la ruta para servir openapi.yaml
+│   └──controllers/
+│        └── hello_controller.py
 ```
 
