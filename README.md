@@ -81,4 +81,3 @@ APIFirst/
 │        ├── hello_controller.py
 │        └── user_controller.py     ← NUEVO - lógica de usuarios
 ```
-
