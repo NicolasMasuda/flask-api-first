@@ -69,14 +69,16 @@ Este enfoque optimiza el desarrollo al garantizar que todas las peticiones cumpl
 APIFirst/
 │── app.py
 │── requirements.txt
-│── openapi.yaml
+│── openapi.yaml                    ← Actualizado con /users
 │
 ├── app/
-│   ├── init.py
+│   ├── __init__.py                 ← Validador global
 │   ├── routes/
-│   │    │── hello.py
-│   │    └── docs.py       <-- aquí estará la ruta para servir openapi.yaml
-│   └──controllers/
-│        └── hello_controller.py
+│   │    ├── hello.py               ← Sin cambios
+│   │    ├── users.py               ← NUEVO - endpoint usuarios
+│   │    └── docs.py
+│   └── controllers/
+│        ├── hello_controller.py
+│        └── user_controller.py     ← NUEVO - lógica de usuarios
 ```
 
