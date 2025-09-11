@@ -1,12 +1,22 @@
 openapi: 3.0.3
 info:
-  title: APIFirst Flask con Validación de Usuarios
+  title: APIFirst Flask con Validación de Usuarios y JWT
   version: 1.0.0
-  description: API con validación automática usando OpenAPI
+  description: API con validación automática usando OpenAPI y autenticación JWT
 
 servers:
   - url: http://127.0.0.1:5000
     description: Servidor local de desarrollo
+
+tags:
+  - name: Hello
+    description: Endpoint básico de prueba
+  - name: Users
+    description: Operaciones CRUD para usuarios
+  - name: Products
+    description: Operaciones CRUD para productos
+  - name: Auth
+    description: Autenticación de usuarios
 
 components:
   schemas:
@@ -72,9 +82,80 @@ components:
                 maxLength: 200
                 example: "Excelente producto, muy rápido y buena cámara"
 
+    User:
+      type: object
+      required:
+        - username
+        - password
+        - email
+      properties:
+        username:
+          type: string
+          minLength: 3
+          maxLength: 50
+          example: "juanperez"
+        password:
+          type: string
+          minLength: 6
+          format: password
+          example: "password123"
+        email:
+          type: string
+          format: email
+          example: "juan@ejemplo.com"
+        full_name:
+          type: string
+          minLength: 2
+          maxLength: 100
+          example: "Juan Pérez"
+
+    LoginRequest:
+      type: object
+      required:
+        - username
+        - password
+      properties:
+        username:
+          type: string
+          example: "juanperez"
+        password:
+          type: string
+          format: password
+          example: "password123"
+
+    Token:
+      type: object
+      properties:
+        access_token:
+          type: string
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        token_type:
+          type: string
+          example: "bearer"
+
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+        details:
+          type: string
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Ingrese el token JWT en el formato Bearer <token>
+
+security:
+  - BearerAuth: []
+
 paths:
   /hello:
     get:
+      tags:
+        - Hello
       summary: Endpoint de prueba hello world
       operationId: helloWorld
       responses:
@@ -89,10 +170,70 @@ paths:
                     type: string
                     example: "Hello World!"
 
+  /auth/register:
+    post:
+      tags:
+        - Auth
+      operationId: registerUser
+      summary: Registrar un nuevo usuario
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        '201':
+          description: Usuario registrado correctamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  user:
+                    $ref: '#/components/schemas/User'
+        '400':
+          description: Error de validación
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/login:
+    post:
+      tags:
+        - Auth
+      operationId: loginUser
+      summary: Iniciar sesión y obtener token JWT
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login exitoso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Token'
+        '401':
+          description: Credenciales inválidas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
   /users:
     post:
+      tags:
+        - Users
       operationId: createUser
       summary: Crear un nuevo usuario
+      security: []
       requestBody:
         required: true
         content:
@@ -139,16 +280,15 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                  details:
-                    type: string
+                $ref: '#/components/schemas/Error'
+
   /users/{id}:
     get:
+      tags:
+        - Users
       operationId: getUserById
       summary: Obtener un usuario por ID
+      security: []
       parameters:
         - name: id
           in: path
@@ -177,15 +317,14 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                  details:
-                    type: string
+                $ref: '#/components/schemas/Error'
+
     post:
+      tags:
+        - Users
       operationId: updateUser
       summary: Actualizar un usuario existente
+      security: []
       parameters:
         - name: id
           in: path
@@ -235,28 +374,22 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                  details:
-                    type: string
+                $ref: '#/components/schemas/Error'
         '404':
           description: Usuario no encontrado
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                  details:
-                    type: string
+                $ref: '#/components/schemas/Error'
 
   /products:
     post:
+      tags:
+        - Products
       operationId: createProduct
       summary: Crear un nuevo producto
+      security:
+        - BearerAuth: []
       requestBody:
         required: true
         content:
@@ -275,16 +408,20 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                  details:
-                    type: string
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: No autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
     get:
+      tags:
+        - Products
       operationId: getProducts
       summary: Obtener lista de productos
+      security: []
       parameters:
         - name: category
           in: query
@@ -315,8 +452,11 @@ paths:
 
   /products/{id}:
     get:
+      tags:
+        - Products
       operationId: getProductById
       summary: Obtener un producto por ID
+      security: []
       parameters:
         - name: id
           in: path
@@ -336,16 +476,15 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                  details:
-                    type: string
+                $ref: '#/components/schemas/Error'
 
     put:
+      tags:
+        - Products
       operationId: updateProduct
       summary: Actualizar un producto existente
+      security:
+        - BearerAuth: []
       parameters:
         - name: id
           in: path
@@ -371,27 +510,27 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                  details:
-                    type: string
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: No autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '404':
           description: Producto no encontrado
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                  details:
-                    type: string
+                $ref: '#/components/schemas/Error'
 
     delete:
+      tags:
+        - Products
       operationId: deleteProduct
       summary: Eliminar un producto
+      security:
+        - BearerAuth: []
       parameters:
         - name: id
           in: path
@@ -402,14 +541,15 @@ paths:
       responses:
         '204':
           description: Producto eliminado correctamente
+        '401':
+          description: No autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '404':
           description: Producto no encontrado
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                  details:
-                    type: string
+                $ref: '#/components/schemas/Error'
