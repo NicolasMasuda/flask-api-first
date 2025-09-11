@@ -8,6 +8,70 @@ servers:
   - url: http://127.0.0.1:5000
     description: Servidor local de desarrollo
 
+components:
+  schemas:
+    Product:
+      type: object
+      required:
+        - name
+        - price
+        - category
+      properties:
+        name:
+          type: string
+          minLength: 2
+          maxLength: 40
+          example: "Smartphone XYZ"
+        description:
+          type: string
+          maxLength: 500
+          example: "Último modelo con pantalla AMOLED y cámara de 108MP"
+        price:
+          type: number
+          minimum: 0
+          multipleOf: 0.01
+          example: 599.99
+        category:
+          type: string
+          enum:
+            - electronics
+            - books
+            - ropa
+            - food
+          example: "electronics"
+        tags:
+          type: array
+          minItems: 1
+          items:
+            type: string
+          example: ["tecnología", "mobile", "smartphone"]
+        inStock:
+          type: boolean
+          example: true
+        specifications:
+          type: object
+          additionalProperties:
+            type: string
+          example:
+            processor: "Snapdragon 8 Gen 2"
+            ram: "12GB"
+            storage: "256GB"
+            screen: "6.7 inches"
+        ratings:
+          type: array
+          items:
+            type: object
+            properties:
+              score:
+                type: integer
+                minimum: 1
+                maximum: 5
+                example: 5
+              comment:
+                type: string
+                maxLength: 200
+                example: "Excelente producto, muy rápido y buena cámara"
+
 paths:
   /hello:
     get:
@@ -179,6 +243,167 @@ paths:
                     type: string
         '404':
           description: Usuario no encontrado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  details:
+                    type: string
+
+  /products:
+    post:
+      operationId: createProduct
+      summary: Crear un nuevo producto
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Product'
+      responses:
+        '201':
+          description: Producto creado correctamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '400':
+          description: Error de validación
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  details:
+                    type: string
+
+    get:
+      operationId: getProducts
+      summary: Obtener lista de productos
+      parameters:
+        - name: category
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - electronics
+              - books
+              - ropa
+              - food
+          description: Filtrar productos por categoría
+        - name: inStock
+          in: query
+          required: false
+          schema:
+            type: boolean
+          description: Filtrar productos en stock
+      responses:
+        '200':
+          description: Lista de productos obtenida correctamente
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Product'
+
+  /products/{id}:
+    get:
+      operationId: getProductById
+      summary: Obtener un producto por ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID del producto
+      responses:
+        '200':
+          description: Producto encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '404':
+          description: Producto no encontrado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  details:
+                    type: string
+
+    put:
+      operationId: updateProduct
+      summary: Actualizar un producto existente
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID del producto a actualizar
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Product'
+      responses:
+        '200':
+          description: Producto actualizado correctamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '400':
+          description: Error de validación
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  details:
+                    type: string
+        '404':
+          description: Producto no encontrado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  details:
+                    type: string
+
+    delete:
+      operationId: deleteProduct
+      summary: Eliminar un producto
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID del producto a eliminar
+      responses:
+        '204':
+          description: Producto eliminado correctamente
+        '404':
+          description: Producto no encontrado
           content:
             application/json:
               schema:

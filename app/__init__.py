@@ -97,10 +97,12 @@ def create_app():
     from app.routes.hello import hello_bp
     from app.routes.docs import docs_bp
     from app.routes.users import users_bp
+    from app.routes.products import products_bp
 
     app.register_blueprint(hello_bp)
     app.register_blueprint(docs_bp)
     app.register_blueprint(users_bp)
+    app.register_blueprint(products_bp)
 
     # === 5. Ruta de inicio simple ===
     @app.route('/')
